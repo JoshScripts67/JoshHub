@@ -1,0 +1,224 @@
+-- =========================
+-- Whitelist System
+-- =========================
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local WHITELIST = {
+    "theuserwhobuys",
+    -- add more usernames here
+}
+
+local KICK_MESSAGE =
+"You are not whitelisted!\n\n" ..
+"Please DM @Slasher0366 on Discord or join this server to purchase:\n" ..
+"https://discord.gg/7GvSrZuC3t"
+
+local function isWhitelisted(name)
+    name = name:lower()
+    for _, v in ipairs(WHITELIST) do
+        if name == v:lower() then
+            return true
+        end
+    end
+    return false
+end
+
+if not isWhitelisted(player.Name) and not isWhitelisted(player.DisplayName) then
+    player:Kick(KICK_MESSAGE)
+    return
+end
+
+-- =========================================================
+-- #Josh Scripts - Flying Carpet TP with Smooth Arcade Outline
+-- =========================================================
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local char = player.Character or player.CharacterAdded:Wait()
+local humanoid = char:WaitForChild("Humanoid")
+local hrp = char:WaitForChild("HumanoidRootPart")
+local backpack = player:WaitForChild("Backpack")
+
+local REQUIRED_TOOL = "Flying Carpet"
+local spots = {
+    CFrame.new(-402.18, -6.34, 131.83) * CFrame.Angles(0, math.rad(-20.08), 0),
+    CFrame.new(-416.66, -6.34, -2.05) * CFrame.Angles(0, math.rad(-62.89), 0),
+    CFrame.new(-329.37, -4.68, 18.12) * CFrame.Angles(0, math.rad(-30.53), 0),
+}
+
+local lastStealer = nil
+
+-- Equip Flying Carpet
+local function equipFlyingCarpet()
+    local tool = char:FindFirstChild(REQUIRED_TOOL) or backpack:FindFirstChild(REQUIRED_TOOL)
+    if not tool then
+        warn("Flying Carpet not found!")
+        return false
+    end
+    humanoid:EquipTool(tool)
+    while char:FindFirstChildOfClass("Tool") ~= tool do
+        task.wait()
+    end
+    return true
+end
+
+-- Block Player
+local function block(plr)
+    if not plr or plr == player then return end
+    pcall(function()
+        StarterGui:SetCore("PromptBlockPlayer", plr)
+    end)
+end
+
+-- Teleport + Auto Block
+local function teleportAll()
+    if not equipFlyingCarpet() then return end
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            lastStealer = plr
+            break
+        end
+    end
+
+    for _, spot in ipairs(spots) do
+        hrp.CFrame = spot
+        task.wait(0.12)
+    end
+
+    if lastStealer then
+        block(lastStealer)
+    end
+end
+
+-- =============================
+-- Complete Enhanced GUI (Only GUI changed - everything else is original)
+-- =============================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PrimusScripts"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+
+-- Main Frame
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 260, 0, 320)
+Frame.Position = UDim2.new(0.5, -130, 0.5, -160)
+Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Frame.BackgroundTransparency = 0.1
+Frame.Active = true
+Frame.Draggable = true
+Frame.BorderSizePixel = 0
+Frame.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner", Frame)
+Corner.CornerRadius = UDim.new(0, 12)
+
+local Stroke = Instance.new("UIStroke", Frame)
+Stroke.Thickness = 2
+Stroke.Color = Color3.fromRGB(0, 255, 255)
+Stroke.Transparency = 0.4
+
+local Gradient = Instance.new("UIGradient", Frame)
+Gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 25)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 10, 10))
+}
+Gradient.Rotation = 90
+
+-- Title
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, -100, 0, 45)
+Title.Position = UDim2.new(0, 15, 0, 8)
+Title.Text = "Primus Scripts"
+Title.TextColor3 = Color3.fromRGB(0, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 26
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Minimize Button
+local MinimizeBtn = Instance.new("TextButton", Frame)
+MinimizeBtn.Size = UDim2.new(0, 35, 0, 35)
+MinimizeBtn.Position = UDim2.new(1, -80, 0, 8)
+MinimizeBtn.Text = "—"
+MinimizeBtn.TextColor3 = Color3.new(1,1,1)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+MinimizeBtn.Font = Enum.Font.SourceSansBold
+MinimizeBtn.TextSize = 28
+MinimizeBtn.BorderSizePixel = 0
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 8)
+
+-- Close Button
+local CloseBtn = Instance.new("TextButton", Frame)
+CloseBtn.Size = UDim2.new(0, 35, 0, 35)
+CloseBtn.Position = UDim2.new(1, -40, 0, 8)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.new(1,1,1)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.Font = Enum.Font.SourceSansBold
+CloseBtn.TextSize = 20
+CloseBtn.BorderSizePixel = 0
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+
+-- Content Area
+local Content = Instance.new("Frame", Frame)
+Content.Size = UDim2.new(1, -20, 1, -60)
+Content.Position = UDim2.new(0, 10, 0, 50)
+Content.BackgroundTransparency = 1
+Content.ClipsDescendants = true
+
+-- Teleport Button
+local TeleportButton = Instance.new("TextButton", Content)
+TeleportButton.Size = UDim2.new(0, 220, 0, 55)
+TeleportButton.Position = UDim2.new(0.5, -110, 0.5, -27.5)
+TeleportButton.Text = "Teleport"
+TeleportButton.TextColor3 = Color3.new(1,1,1)
+TeleportButton.BackgroundColor3 = Color3.fromRGB(0, 120, 235)
+TeleportButton.Font = Enum.Font.SourceSansBold
+TeleportButton.TextSize = 22
+TeleportButton.BorderSizePixel = 0
+Instance.new("UICorner", TeleportButton).CornerRadius = UDim.new(0, 10)
+
+-- Hover effects
+local function hover(btn, normal, light)
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = light}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = normal}):Play()
+    end)
+end
+
+hover(TeleportButton, Color3.fromRGB(0,120,235), Color3.fromRGB(0,160,255))
+hover(MinimizeBtn, Color3.fromRGB(60,60,60), Color3.fromRGB(90,90,90))
+hover(CloseBtn, Color3.fromRGB(200,50,50), Color3.fromRGB(255,80,80))
+
+-- Minimize Logic
+local minimized = false
+local fullSize = UDim2.new(0, 260, 0, 320)
+local miniSize = UDim2.new(0, 260, 0, 55)
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    MinimizeBtn.Text = minimized and "+" or "—"
+    
+    TweenService:Create(Frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
+        Size = minimized and miniSize or fullSize
+    }):Play()
+    
+    Content.Visible = not minimized
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- Connect the original teleport function
+TeleportButton.MouseButton1Click:Connect(teleportAll)
+
+-- Fade in animation
+Frame.BackgroundTransparency = 1
+TweenService:Create(Frame, TweenInfo.new(0.5), {BackgroundTransparency = 0.1}):Play()
